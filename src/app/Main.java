@@ -15,13 +15,15 @@ import api.service.impl.PratoService;
 import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
-import java.util.UUID;
 
 public class Main {
     private static Scanner scanner = new Scanner(System.in);
     private static PratoController pratoController;
     private static PedidoController pedidoController;
     private static ItemPedidoController itemPedidoController;
+
+    // Sequencial para IDs dos pratos
+    private static int nextPratoId = 1;
 
     public static void main(String[] args) {
         InMemoryRepository<Prato> pratoRepository = new InMemoryRepository<>();
@@ -37,14 +39,14 @@ public class Main {
         itemPedidoController = new ItemPedidoController(itemPedidoService);
 
         System.out.println("Bem-vindo ao Sistema de Gerenciamento de Pedidos do Restaurante!");
-        popularDadosIniciais(); 
+        popularDadosIniciais();
         exibirMenuPrincipal();
     }
     private static void popularDadosIniciais() {
         System.out.println("\nPopuando dados iniciais...");
-        pratoController.add(new Prato(UUID.randomUUID().toString(), "Pizza Calabresa", "Pizza com molho, queijo e calabresa", 40.00));
-        pratoController.add(new Prato(UUID.randomUUID().toString(), "Macarrão à Carbonara", "Massa com ovos, queijo, bacon e pimenta", 55.00));
-        pratoController.add(new Prato(UUID.randomUUID().toString(), "Refrigerante Lata", "Coca-cola, Pepsi, Guaraná", 7.00));
+        pratoController.add(new Prato(gerarProximoPratoId(), "Pizza Calabresa", "Pizza com molho, queijo e calabresa", 40.00));
+        pratoController.add(new Prato(gerarProximoPratoId(), "Macarrão à Carbonara", "Massa com ovos, queijo, bacon e pimenta", 55.00));
+        pratoController.add(new Prato(gerarProximoPratoId(), "Refrigerante Lata", "Coca-cola, Pepsi, Guaraná", 7.00));
         System.out.println("Dados iniciais populados.");
     }
     private static void exibirMenuPrincipal() {
@@ -58,7 +60,7 @@ public class Main {
 
             try {
                 opcao = scanner.nextInt();
-                scanner.nextLine(); 
+                scanner.nextLine();
 
                 switch (opcao) {
                     case 1:
@@ -75,8 +77,8 @@ public class Main {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Entrada inválida. Por favor, digite um número.");
-                scanner.nextLine(); 
-                opcao = -1; 
+                scanner.nextLine();
+                opcao = -1;
             }
         } while (opcao != 0);
         scanner.close();
@@ -95,7 +97,7 @@ public class Main {
 
             try {
                 opcao = scanner.nextInt();
-                scanner.nextLine(); 
+                scanner.nextLine();
 
                 switch (opcao) {
                     case 1:
@@ -121,7 +123,7 @@ public class Main {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Entrada inválida. Por favor, digite um número.");
-                scanner.nextLine(); 
+                scanner.nextLine();
                 opcao = -1;
             }
         } while (opcao != 0);
@@ -142,7 +144,7 @@ public class Main {
 
             try {
                 opcao = scanner.nextInt();
-                scanner.nextLine(); 
+                scanner.nextLine();
                 switch (opcao) {
                     case 1:
                         criarPedido();
@@ -173,7 +175,7 @@ public class Main {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Entrada inválida. Por favor, digite um número.");
-                scanner.nextLine(); 
+                scanner.nextLine();
                 opcao = -1;
             }
         } while (opcao != 0);
@@ -188,16 +190,22 @@ public class Main {
         double preco = 0.0;
         try {
             preco = scanner.nextDouble();
-            scanner.nextLine(); 
+            scanner.nextLine();
         } catch (InputMismatchException e) {
             System.out.println("Preço inválido. Operação cancelada.");
-            scanner.nextLine(); 
+            scanner.nextLine();
             return;
         }
 
-        Prato novoPrato = new Prato(UUID.randomUUID().toString(), nome, descricao, preco);
+        Prato novoPrato = new Prato(gerarProximoPratoId(), nome, descricao, preco);
         pratoController.add(novoPrato);
         System.out.println("Prato '" + nome + "' adicionado com sucesso!");
+    }
+
+    private static String gerarProximoPratoId() {
+        String id = "PR" + String.format("%03d", nextPratoId);
+        nextPratoId++;
+        return id;
     }
 
     private static void listarPratos() {
@@ -250,13 +258,13 @@ public class Main {
         double novoPreco = 0.0;
         try {
             novoPreco = scanner.nextDouble();
-            scanner.nextLine(); 
+            scanner.nextLine();
             if (novoPreco > 0) {
                 pratoExistente.setPreco(novoPreco);
             }
         } catch (InputMismatchException e) {
             System.out.println("Preço inválido. Mantendo preço original.");
-            scanner.nextLine(); 
+            scanner.nextLine();
         }
 
         if (pratoController.update(id, pratoExistente)) {
@@ -277,18 +285,18 @@ public class Main {
         }
     }
     private static void criarPedido() {
-    System.out.println("\n--- CRIAR NOVO PEDIDO ---");
-    System.out.print("Digite a mesa do pedido: ");
-    String mesa = scanner.nextLine();
-    
-    // Gerar ID sequencial para pedidos (PE001, PE002, etc.)
-    int nextPedidoId = pedidoController.getAll().size() + 1;
-    String pedidoId = "PE" + String.format("%03d", nextPedidoId);
-    
-    Pedido novoPedido = new Pedido(pedidoId, mesa);
-    pedidoController.add(novoPedido);
-    System.out.println("Pedido criado para a mesa '" + mesa + "' com ID: " + novoPedido.getId());
-}
+        System.out.println("\n--- CRIAR NOVO PEDIDO ---");
+        System.out.print("Digite a mesa do pedido: ");
+        String mesa = scanner.nextLine();
+
+        // Gerar ID sequencial para pedidos (PE001, PE002, etc.)
+        int nextPedidoId = pedidoController.getAll().size() + 1;
+        String pedidoId = "PE" + String.format("%03d", nextPedidoId);
+
+        Pedido novoPedido = new Pedido(pedidoId, mesa);
+        pedidoController.add(novoPedido);
+        System.out.println("Pedido criado para a mesa '" + mesa + "' com ID: " + novoPedido.getId());
+    }
 
     private static void listarPedidos() {
         System.out.println("\n--- LISTA DE PEDIDOS ---");
@@ -342,48 +350,48 @@ public class Main {
     }
 
     private static void adicionarItemAoPedido() {
-    System.out.println("\n--- ADICIONAR ITEM AO PEDIDO ---");
-    System.out.print("Digite o ID do Pedido: ");
-    String pedidoId = scanner.nextLine();
-    Pedido pedido = pedidoController.getById(pedidoId);
+        System.out.println("\n--- ADICIONAR ITEM AO PEDIDO ---");
+        System.out.print("Digite o ID do Pedido: ");
+        String pedidoId = scanner.nextLine();
+        Pedido pedido = pedidoController.getById(pedidoId);
 
-    if (pedido == null) {
-        System.out.println("Pedido com ID '" + pedidoId + "' não encontrado.");
-        return;
-    }
-
-    listarPratos();
-    System.out.print("Digite o ID do Prato a ser adicionado: ");
-    String pratoId = scanner.nextLine();
-    Prato prato = pratoController.getById(pratoId);
-
-    if (prato == null) {
-        System.out.println("Prato com ID '" + pratoId + "' não encontrado.");
-        return;
-    }
-
-    System.out.print("Digite a quantidade: ");
-    try {
-        int quantidade = scanner.nextInt();
-        scanner.nextLine();
-        
-        if (quantidade <= 0) {
-            System.out.println("Quantidade deve ser maior que zero.");
+        if (pedido == null) {
+            System.out.println("Pedido com ID '" + pedidoId + "' não encontrado.");
             return;
         }
 
-        // Gerar ID sequencial para itens (IT001, IT002, etc.)
-        int nextItemId = itemPedidoController.getAll().size() + 1;
-        String itemId = "IT" + String.format("%03d", nextItemId);
-        
-        ItemPedido novoItem = new ItemPedido(itemId, pedidoId, pratoId, quantidade, prato.getPreco());
-        itemPedidoController.add(novoItem);
-        System.out.println(quantidade + "x '" + prato.getNome() + "' adicionado ao pedido " + pedidoId + ".");
-    } catch (InputMismatchException e) {
-        System.out.println("Quantidade inválida. Digite um número inteiro.");
-        scanner.nextLine();
+        listarPratos();
+        System.out.print("Digite o ID do Prato a ser adicionado: ");
+        String pratoId = scanner.nextLine();
+        Prato prato = pratoController.getById(pratoId);
+
+        if (prato == null) {
+            System.out.println("Prato com ID '" + pratoId + "' não encontrado.");
+            return;
+        }
+
+        System.out.print("Digite a quantidade: ");
+        try {
+            int quantidade = scanner.nextInt();
+            scanner.nextLine();
+
+            if (quantidade <= 0) {
+                System.out.println("Quantidade deve ser maior que zero.");
+                return;
+            }
+
+            // Gerar ID sequencial para itens (IT001, IT002, etc.)
+            int nextItemId = itemPedidoController.getAll().size() + 1;
+            String itemId = "IT" + String.format("%03d", nextItemId);
+
+            ItemPedido novoItem = new ItemPedido(itemId, pedidoId, pratoId, quantidade, prato.getPreco());
+            itemPedidoController.add(novoItem);
+            System.out.println(quantidade + "x '" + prato.getNome() + "' adicionado ao pedido " + pedidoId + ".");
+        } catch (InputMismatchException e) {
+            System.out.println("Quantidade inválida. Digite um número inteiro.");
+            scanner.nextLine();
+        }
     }
-}
 
     private static void removerItemDoPedido() {
         System.out.println("\n--- REMOVER ITEM DO PEDIDO ---");
